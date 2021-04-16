@@ -1,0 +1,20 @@
+# this gives access to the mpich header files
+prefix=/usr/local/Cellar/mpich/3.3.2_1
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: mpich
+Description: High Performance and portable MPI
+Version: 3.3.2
+URL: http://www.mcs.anl.gov/research/projects/mpich
+Requires:
+Libs:   -Wl,-flat_namespace -Wl,-commons,use_dylibs -L${libdir} -lmpi -lpmpi -lm   -lxml2  -lpthread  
+Cflags:   -I${includedir}
+
+# pkg-config does not understand Cxxflags, etc. So we allow users to
+# query them using the --variable option
+
+cxxflags=  -I${includedir}
+fflags=-fallow-argument-mismatch -I${includedir}
+fcflags= -I${includedir}
