@@ -1,30 +1,57 @@
 #include "OpenGLApp.h"
 
 #include <imgui/imgui.h>
+#include <json.h>
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "MyUtil.h"
+
+using json = nlohmann::json;
 
 OpenGLApp *OpenGLApp::instance = nullptr;
 
 void OpenGLApp::Initialize()
 {
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint( GLFW_RESIZABLE, GLFW_FALSE );
+    glfwWindowHint(GLFW_DECORATED, GL_FALSE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
+    int size = sqrt(world_size);
+
+    ifstream in;
+    in.open("./Resources/config.json");
+    if(!in.is_open()) {
+        cerr << "Config file open failed";
+    }
+    json config;
+    in >> config;
+    ScreenWidth = config["width"] / size;
+    ScreenHeight = config["height"] / size;
 
     pWindow = glfwCreateWindow(ScreenWidth, ScreenHeight, AppName.c_str(), NULL, NULL);
     if(pWindow == nullptr) {
+        cout << "Window Create Failed" << endl;
         glfwTerminate();
         throw std::runtime_error("Window create failed");
     }
+
+    int offsetX = world_rank % size;
+    int offsetY = world_rank / size;
+
+    int locationX = offsetX * ScreenWidth, locationY = ScreenHeight * offsetY;
+    glfwSetWindowPos(pWindow, locationX, locationY);
+
     glfwMakeContextCurrent(pWindow);
     glfwSetFramebufferSizeCallback(pWindow, framebuffer_size_callback);
 
@@ -41,10 +68,6 @@ void OpenGLApp::Initialize()
 
     // Setup ImGui binding
     ImGui_ImplGlfwGL3_Init(pWindow, true);
-
-    MPI_Init(NULL, NULL);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
     inputProcessor = InputProcessor::Instance();
     inputProcessor->Initialize(OpenGLApp::Instance());
@@ -99,7 +122,7 @@ void OpenGLApp::Draw()
     glm::mat4 tileProjection = projection;
     
 
-    int size = 2;
+    int size = sqrt(world_size);
     tileProjection[0][0] *= size;
     tileProjection[1][1] *= size;
     tileProjection[2][0] = -size + 2 * (world_rank % size) + 1;
