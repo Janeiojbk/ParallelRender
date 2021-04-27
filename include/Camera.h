@@ -16,6 +16,8 @@ enum Camera_Movement {
     BACKWARD,
     LEFT,
     RIGHT,
+    UP,
+    DOWN,
     TURN_LEFT,
     TURN_RIGHT,
     TURN_UP,
@@ -105,6 +107,12 @@ public:
                 break;
             case RIGHT:
                 Position += Right * velocity;
+                break;
+            case UP:
+                Position += Up * velocity;
+                break;
+            case DOWN:
+                Position -= Up * velocity;
                 break;
             case TURN_UP:
                 Pitch += velocity;

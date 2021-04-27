@@ -22,6 +22,10 @@ void InputProcessor::ProcessInput()
         operation = LEFT;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         operation = RIGHT;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        operation = UP;
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        operation = DOWN;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
         operation = TURN_UP;
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
